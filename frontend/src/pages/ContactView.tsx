@@ -1,0 +1,103 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { DataGrid } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+
+const API_BASE = 'http://127.0.0.1:8000';
+
+export default function ContactView() {
+  const [rows, setRows] = useState([]);
+  const [corporates, setCorporates] = useState<{id: string, name: string, short_name: string}[]>([]);
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: ''
+  });
+
+  const fetchData = async () => {
+    try {
+      const resContacts = await axios.get(`${API_BASE}/contacts/`);
+      const resCorps = await axios.get(`${API_BASE}/corporates/`);
+      setRows(resContacts.data);
+      setCorporates(resCorps.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleSave = async () => {
+    try {
+      await axios.post(`${API_BASE}/contacts/`, formData);
+      setOpen(false);
+      setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' });
+      fetchData();
+    } catch (e) {
+      alert("Error saving contact (Maybe ID already exists?)");
+    }
+  };
+
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: '聯絡人編號', width: 130 },
+    { field: 'name', headerName: '聯絡人姓名', width: 150 },
+    { 
+      field: 'corporate_id', 
+      headerName: '所屬公司', 
+      width: 200,
+      valueGetter: (params, row) => {
+        const corp = corporates.find(c => c.id === row.corporate_id);
+        return corp ? corp.name : row.corporate_id;
+      }
+    },
+    { field: 'title', headerName: '職稱', width: 130 },
+    { field: 'mobile', headerName: '手機', width: 150 },
+    { field: 'email', headerName: 'Email', width: 220 },
+    { field: 'remarks', headerName: '備註/分會', width: 180 },
+  ];
+
+  return (
+    <div style={{ height: 650, width: '100%', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>自然人 (聯絡人) 名單管理</h1>
+        <Button variant="contained" color="secondary" onClick={() => setOpen(true)} style={{ backgroundColor: '#0ea5e9' }}>
+          + 新增聯絡人
+        </Button>
+      </div>
+      
+      <DataGrid rows={rows} columns={columns} />
+
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>新增自然人名單</DialogTitle>
+        <DialogContent>
+          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField label="聯絡人編號 (例如: 00114)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth />
+            <TextField label="人員姓名" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} fullWidth />
+            
+            <FormControl fullWidth>
+              <InputLabel>綁定所屬法人公司</InputLabel>
+              <Select
+                value={formData.corporate_id}
+                label="綁定所屬法人公司"
+                onChange={e => setFormData({...formData, corporate_id: e.target.value})}
+              >
+                {corporates.map(corp => (
+                  <MenuItem key={corp.id} value={corp.id}>{corp.name} ({corp.short_name})</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField label="職稱" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} fullWidth />
+            <TextField label="手機" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} fullWidth />
+            <TextField label="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} fullWidth />
+            <TextField label="備註 (例如: BNI 區域董事...)" value={formData.remarks} onChange={e => setFormData({...formData, remarks: e.target.value})} fullWidth />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>取消</Button>
+          <Button variant="contained" onClick={handleSave} style={{ backgroundColor: '#0ea5e9' }}>儲存聯絡人</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+}
