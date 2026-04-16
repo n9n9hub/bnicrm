@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box } from '@mui/material';
-
-const API_BASE = 'http://127.0.0.1:8000';
+import { supabase } from '../supabaseClient';
 
 export default function CorporateView() {
   const [rows, setRows] = useState([]);
@@ -15,8 +13,9 @@ export default function CorporateView() {
 
   const fetchCorporates = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/corporates/`);
-      setRows(res.data);
+      const { data, error } = await supabase.from('corporates').select('*');
+      if (error) throw error;
+      setRows(data || []);
     } catch (err) {
       console.error(err);
     }
@@ -26,12 +25,14 @@ export default function CorporateView() {
 
   const handleSave = async () => {
     try {
-      await axios.post(`${API_BASE}/corporates/`, formData);
+      const { error } = await supabase.from('corporates').upsert([formData]);
+      if (error) throw error;
       setOpen(false);
       setFormData({ id: '', name: '', short_name: '', billing_region: '', tax_id: '', phone: '', category: ''});
       fetchCorporates();
     } catch (e) {
-      alert("Error saving corporate (Maybe ID already exists?)");
+      alert("儲存失敗！可能缺少必填欄位或未正確連線。");
+      console.error(e);
     }
   };
 
@@ -49,7 +50,7 @@ export default function CorporateView() {
     <div style={{ height: 650, width: '100%', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>法人名單管理</h1>
-        <Button variant="contained" color="primary" onClick={() => setOpen(true)} style={{ backgroundColor: '#4f46e5' }}>
+        <Button variant="contained" onClick={() => setOpen(true)} style={{ backgroundColor: '#4f46e5' }}>
           + 新增法人公司
         </Button>
       </div>
@@ -71,7 +72,7 @@ export default function CorporateView() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>取消</Button>
-          <Button variant="contained" onClick={handleSave} style={{ backgroundColor: '#4f46e5' }}>儲存</Button>
+          <Button variant="contained" onClick={handleSave} style={{ backgroundColor: '#4f46e5', color: '#fff' }}>儲存</Button>
         </DialogActions>
       </Dialog>
     </div>

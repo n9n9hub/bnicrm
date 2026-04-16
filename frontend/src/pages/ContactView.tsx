@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
-
-const API_BASE = 'http://127.0.0.1:8000';
+import { supabase } from '../supabaseClient';
 
 export default function ContactView() {
   const [rows, setRows] = useState([]);
@@ -16,10 +14,14 @@ export default function ContactView() {
 
   const fetchData = async () => {
     try {
-      const resContacts = await axios.get(`${API_BASE}/contacts/`);
-      const resCorps = await axios.get(`${API_BASE}/corporates/`);
-      setRows(resContacts.data);
-      setCorporates(resCorps.data);
+      const { data: contacts, error: e1 } = await supabase.from('contacts').select('*');
+      const { data: corps, error: e2 } = await supabase.from('corporates').select('id, name, short_name');
+      
+      if (e1) throw e1;
+      if (e2) throw e2;
+
+      setRows(contacts || []);
+      setCorporates(corps || []);
     } catch (err) {
       console.error(err);
     }
@@ -29,12 +31,14 @@ export default function ContactView() {
 
   const handleSave = async () => {
     try {
-      await axios.post(`${API_BASE}/contacts/`, formData);
+      const { error } = await supabase.from('contacts').upsert([formData]);
+      if (error) throw error;
       setOpen(false);
       setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' });
       fetchData();
     } catch (e) {
-      alert("Error saving contact (Maybe ID already exists?)");
+      alert("儲存失敗！可能缺少必填欄位或未正確連線。");
+      console.error(e);
     }
   };
 
@@ -60,7 +64,7 @@ export default function ContactView() {
     <div style={{ height: 650, width: '100%', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>自然人 (聯絡人) 名單管理</h1>
-        <Button variant="contained" color="secondary" onClick={() => setOpen(true)} style={{ backgroundColor: '#0ea5e9' }}>
+        <Button variant="contained" onClick={() => setOpen(true)} style={{ backgroundColor: '#0ea5e9' }}>
           + 新增聯絡人
         </Button>
       </div>
@@ -82,7 +86,7 @@ export default function ContactView() {
                 onChange={e => setFormData({...formData, corporate_id: e.target.value})}
               >
                 {corporates.map(corp => (
-                  <MenuItem key={corp.id} value={corp.id}>{corp.name} ({corp.short_name})</MenuItem>
+                   <MenuItem key={corp.id} value={corp.id}>{corp.name} ({corp.short_name})</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -95,7 +99,7 @@ export default function ContactView() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>取消</Button>
-          <Button variant="contained" onClick={handleSave} style={{ backgroundColor: '#0ea5e9' }}>儲存聯絡人</Button>
+          <Button variant="contained" onClick={handleSave} style={{ backgroundColor: '#0ea5e9', color: '#fff' }}>儲存聯絡人</Button>
         </DialogActions>
       </Dialog>
     </div>
