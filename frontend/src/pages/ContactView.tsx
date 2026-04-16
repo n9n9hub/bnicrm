@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import { supabase } from '../supabaseClient';
 
 export default function ContactView() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [corporates, setCorporates] = useState<{id: string, name: string, short_name: string}[]>([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -49,7 +49,7 @@ export default function ContactView() {
       field: 'corporate_id', 
       headerName: '所屬公司', 
       width: 200,
-      valueGetter: (params, row) => {
+      valueGetter: (_, row) => {
         const corp = corporates.find(c => c.id === row.corporate_id);
         return corp ? corp.name : row.corporate_id;
       }
@@ -74,7 +74,7 @@ export default function ContactView() {
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>新增自然人名單</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
             <TextField label="聯絡人編號 (例如: 00114)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth />
             <TextField label="人員姓名" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} fullWidth />
             
