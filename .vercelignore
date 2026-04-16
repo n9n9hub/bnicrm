@@ -1,0 +1,3 @@
+backend/
+supabase_schema.sql
+.venv/
