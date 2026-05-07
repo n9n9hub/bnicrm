@@ -10,7 +10,7 @@ export default function ContactView() {
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: ''
+    id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: ''
   });
 
   const fetchData = async () => {
@@ -140,7 +140,7 @@ export default function ContactView() {
       const { error } = await supabase.from('contacts').upsert([formData]);
       if (error) throw error;
       setOpen(false);
-      setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' });
+      setFormData({ id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: '' });
       setIsEditing(false);
       fetchData();
     } catch (e) {
@@ -161,6 +161,7 @@ export default function ContactView() {
         return corp ? corp.name : row.corporate_id;
       }
     },
+    { field: 'address', headerName: '地址', width: 250 },
     { field: 'title', headerName: '職稱', width: 130 },
     { field: 'mobile', headerName: '手機', width: 150 },
     { field: 'email', headerName: 'Email', width: 220 },
@@ -188,7 +189,7 @@ export default function ContactView() {
           <Button variant="outlined" onClick={handleExport} style={{ borderColor: '#10b981', color: '#10b981' }}>
             📤 匯出 CSV
           </Button>
-          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' }); setOpen(true); }} style={{ backgroundColor: '#0ea5e9' }}>
+          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: '' }); setOpen(true); }} style={{ backgroundColor: '#0ea5e9' }}>
             + 新增聯絡人
           </Button>
         </Box>
@@ -224,6 +225,7 @@ export default function ContactView() {
               </Select>
             </FormControl>
 
+            <TextField label="地址" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} fullWidth />
             <TextField label="職稱" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} fullWidth />
             <TextField label="手機" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} fullWidth />
             <TextField label="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} fullWidth />
