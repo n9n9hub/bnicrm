@@ -7,6 +7,7 @@ import Papa from 'papaparse';
 export default function CorporateView() {
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     id: '', name: '', short_name: '', billing_region: '', address: '', tax_id: '', phone: '', category: ''
   });
@@ -135,6 +136,7 @@ export default function CorporateView() {
       if (error) throw error;
       setOpen(false);
       setFormData({ id: '', name: '', short_name: '', billing_region: '', address: '', tax_id: '', phone: '', category: ''});
+      setIsEditing(false);
       fetchCorporates();
     } catch (e) {
       alert("儲存失敗！可能缺少必填欄位或未正確連線。");
@@ -174,19 +176,27 @@ export default function CorporateView() {
           <Button variant="outlined" onClick={handleExport} style={{ borderColor: '#10b981', color: '#10b981' }}>
             📤 匯出 CSV
           </Button>
-          <Button variant="contained" onClick={() => setOpen(true)} style={{ backgroundColor: '#4f46e5' }}>
+          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', short_name: '', billing_region: '', address: '', tax_id: '', phone: '', category: ''}); setOpen(true); }} style={{ backgroundColor: '#4f46e5' }}>
             + 新增法人公司
           </Button>
         </Box>
       </div>
       
-      <DataGrid rows={rows} columns={columns} />
+      <DataGrid 
+        rows={rows} 
+        columns={columns} 
+        onRowDoubleClick={(params) => {
+          setFormData(params.row);
+          setIsEditing(true);
+          setOpen(true);
+        }}
+      />
 
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>新增法人公司</DialogTitle>
+        <DialogTitle>{isEditing ? '編輯法人公司' : '新增法人公司'}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-            <TextField label="客戶編號 (例如: C-00086)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth />
+            <TextField label="客戶編號 (例如: C-00086)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth disabled={isEditing} />
             <TextField label="客戶名稱" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} fullWidth />
             <TextField label="客戶簡稱" value={formData.short_name} onChange={e => setFormData({...formData, short_name: e.target.value})} fullWidth />
             <TextField label="帳單鄉鎮市區" value={formData.billing_region} onChange={e => setFormData({...formData, billing_region: e.target.value})} fullWidth />

@@ -8,6 +8,7 @@ export default function ContactView() {
   const [rows, setRows] = useState<any[]>([]);
   const [corporates, setCorporates] = useState<{id: string, name: string, short_name: string}[]>([]);
   const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: ''
   });
@@ -140,6 +141,7 @@ export default function ContactView() {
       if (error) throw error;
       setOpen(false);
       setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' });
+      setIsEditing(false);
       fetchData();
     } catch (e) {
       alert("儲存失敗！可能缺少必填欄位或未正確連線。");
@@ -186,19 +188,27 @@ export default function ContactView() {
           <Button variant="outlined" onClick={handleExport} style={{ borderColor: '#10b981', color: '#10b981' }}>
             📤 匯出 CSV
           </Button>
-          <Button variant="contained" onClick={() => setOpen(true)} style={{ backgroundColor: '#0ea5e9' }}>
+          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', corporate_id: '', title: '', mobile: '', email: '', remarks: '' }); setOpen(true); }} style={{ backgroundColor: '#0ea5e9' }}>
             + 新增聯絡人
           </Button>
         </Box>
       </div>
       
-      <DataGrid rows={rows} columns={columns} />
+      <DataGrid 
+        rows={rows} 
+        columns={columns} 
+        onRowDoubleClick={(params) => {
+          setFormData(params.row);
+          setIsEditing(true);
+          setOpen(true);
+        }}
+      />
 
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>新增自然人名單</DialogTitle>
+        <DialogTitle>{isEditing ? '編輯自然人名單' : '新增自然人名單'}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-            <TextField label="聯絡人編號 (例如: 00114)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth />
+            <TextField label="聯絡人編號 (例如: 00114)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} fullWidth disabled={isEditing} />
             <TextField label="人員姓名" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} fullWidth />
             
             <FormControl fullWidth>
