@@ -8,7 +8,7 @@ export default function CorporateView() {
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    id: '', name: '', short_name: '', billing_region: '', tax_id: '', phone: '', category: ''
+    id: '', name: '', short_name: '', billing_region: '', address: '', tax_id: '', phone: '', category: ''
   });
 
   const fetchCorporates = async () => {
@@ -30,6 +30,7 @@ export default function CorporateView() {
     'name': '客戶名稱',
     'short_name': '客戶簡稱',
     'billing_region': '帳單縣市分區',
+    'address': '地址',
     'tax_id': '統一編號',
     'phone': '電話號碼',
     'category': '類別',
@@ -133,7 +134,7 @@ export default function CorporateView() {
       const { error } = await supabase.from('corporates').upsert([formData]);
       if (error) throw error;
       setOpen(false);
-      setFormData({ id: '', name: '', short_name: '', billing_region: '', tax_id: '', phone: '', category: ''});
+      setFormData({ id: '', name: '', short_name: '', billing_region: '', address: '', tax_id: '', phone: '', category: ''});
       fetchCorporates();
     } catch (e) {
       alert("儲存失敗！可能缺少必填欄位或未正確連線。");
@@ -146,6 +147,7 @@ export default function CorporateView() {
     { field: 'name', headerName: '客戶名稱', width: 200 },
     { field: 'short_name', headerName: '客戶簡稱', width: 130 },
     { field: 'billing_region', headerName: '帳單縣市分區', width: 160 },
+    { field: 'address', headerName: '地址', width: 250 },
     { field: 'tax_id', headerName: '統一編號', width: 130 },
     { field: 'phone', headerName: '電話號碼', width: 150 },
     { field: 'category', headerName: '類別', width: 130 },
@@ -188,6 +190,7 @@ export default function CorporateView() {
             <TextField label="客戶名稱" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} fullWidth />
             <TextField label="客戶簡稱" value={formData.short_name} onChange={e => setFormData({...formData, short_name: e.target.value})} fullWidth />
             <TextField label="帳單鄉鎮市區" value={formData.billing_region} onChange={e => setFormData({...formData, billing_region: e.target.value})} fullWidth />
+            <TextField label="地址" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} fullWidth />
             <TextField label="統一編號" value={formData.tax_id} onChange={e => setFormData({...formData, tax_id: e.target.value})} fullWidth />
             <TextField label="電話號碼" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} fullWidth />
             <TextField label="類別 (客戶/潛在客戶...)" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} fullWidth />

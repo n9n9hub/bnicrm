@@ -6,6 +6,7 @@ CREATE TABLE corporates (
     name TEXT NOT NULL,
     short_name TEXT,
     billing_region TEXT,
+    address TEXT,
     tax_id TEXT,
     phone TEXT,
     description TEXT,
