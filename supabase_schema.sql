@@ -19,6 +19,7 @@ CREATE TABLE contacts (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     corporate_id TEXT REFERENCES corporates(id) ON DELETE CASCADE,
+    chapter_name TEXT,
     remarks TEXT,
     address TEXT,
     mobile TEXT,

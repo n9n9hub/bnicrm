@@ -10,7 +10,7 @@ export default function ContactView() {
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: ''
+    id: '', name: '', corporate_id: '', chapter_name: '', address: '', title: '', mobile: '', email: '', remarks: ''
   });
 
   const fetchData = async () => {
@@ -36,6 +36,7 @@ export default function ContactView() {
     'id': '聯絡人編號',
     'name': '聯絡人姓名',
     'corporate_id': '所屬公司編號',
+    'chapter_name': '分會名稱',
     'title': '職稱',
     'mobile': '手機',
     'phone': '室內電話',
@@ -140,7 +141,7 @@ export default function ContactView() {
       const { error } = await supabase.from('contacts').upsert([formData]);
       if (error) throw error;
       setOpen(false);
-      setFormData({ id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: '' });
+      setFormData({ id: '', name: '', corporate_id: '', chapter_name: '', address: '', title: '', mobile: '', email: '', remarks: '' });
       setIsEditing(false);
       fetchData();
     } catch (e) {
@@ -161,6 +162,7 @@ export default function ContactView() {
         return corp ? corp.name : row.corporate_id;
       }
     },
+    { field: 'chapter_name', headerName: '分會名稱', width: 150 },
     { field: 'address', headerName: '地址', width: 250 },
     { field: 'title', headerName: '職稱', width: 130 },
     { field: 'mobile', headerName: '手機', width: 150 },
@@ -189,7 +191,7 @@ export default function ContactView() {
           <Button variant="outlined" onClick={handleExport} style={{ borderColor: '#10b981', color: '#10b981' }}>
             📤 匯出 CSV
           </Button>
-          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', corporate_id: '', address: '', title: '', mobile: '', email: '', remarks: '' }); setOpen(true); }} style={{ backgroundColor: '#0ea5e9' }}>
+          <Button variant="contained" onClick={() => { setIsEditing(false); setFormData({ id: '', name: '', corporate_id: '', chapter_name: '', address: '', title: '', mobile: '', email: '', remarks: '' }); setOpen(true); }} style={{ backgroundColor: '#0ea5e9' }}>
             + 新增聯絡人
           </Button>
         </Box>
@@ -225,6 +227,7 @@ export default function ContactView() {
               </Select>
             </FormControl>
 
+            <TextField label="分會名稱 (例如: 大盈分會)" value={formData.chapter_name} onChange={e => setFormData({...formData, chapter_name: e.target.value})} fullWidth />
             <TextField label="地址" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} fullWidth />
             <TextField label="職稱" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} fullWidth />
             <TextField label="手機" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} fullWidth />
